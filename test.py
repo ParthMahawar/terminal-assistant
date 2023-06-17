@@ -3,7 +3,7 @@ import subprocess
 import json
 
 # Replace with your OpenAI API Key
-openai.api_key = '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'
+openai.api_key = 'API_KEY'
 
 def terminal_command_executor(command):
     """Execute a terminal command and return the output"""
