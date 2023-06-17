@@ -3,7 +3,7 @@ import os
 import sys
 import json
 
-openai.api_key = "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"
+openai.api_key = ""
 
 def run_terminal_command(command):
     print(command)
