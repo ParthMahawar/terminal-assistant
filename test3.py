@@ -25,7 +25,7 @@ def play_yt_vid_from_search(fargs):
         vid = s.results[random.randint(0, len(s.results)-1)]
 
     print(f"firefox https://youtube.com/watch?v={vid.video_id}")
-    os.system(f"firefox https://youtube.com/watch?v={vid.video_id}")
+    webbrowser.open_new_tab(f"https://youtube.com/watch?v={vid.video_id}")
 
 def google_search(fargs):
     """Opens a new tab with a Google search for the given term"""
@@ -73,7 +73,7 @@ def run_conversation():
         },
         {
             "name": "google_search",
-            "description": "Opens a Google Search window, only use when user asks for real-time info like sports scores or election results",
+            "description": "Opens a Google Search window, only use when user asks for real-time info like sports scores, election results, flight statuses, or news",
             "parameters":{
                 "type": "object",
                 "properties": {
@@ -108,7 +108,11 @@ def run_conversation():
             function_args = json.loads(response_message["function_call"]["arguments"])
             
             print(f"Function to execute: {function_name}")
-            confirmation = input("Are you sure you want to execute this function? (y/n): ")
+            if function_name != "terminal_command_executor":
+                confirmation = "y"
+            else:
+                print(function_args.get("command"))
+                confirmation = input("Are you sure you want to execute these terminal commands? (y/n): ")
 
             if confirmation.lower() == 'y':
                 function_response = function_to_call(function_args)
@@ -130,13 +134,14 @@ def run_conversation():
                     
                 messages.append(response_message)  # extend conversation with assistant's reply
                 
-                second_response = openai.ChatCompletion.create(
-                    model="gpt-4-0613",
-                    messages=messages,
-                )
-                
-                assistant_message = second_response["choices"][0]["message"]["content"]
-                print(f"Response: {assistant_message}")
+                if function_name == "terminal_command_executor":
+                    second_response = openai.ChatCompletion.create(
+                        model="gpt-4-0613",
+                        messages=messages,
+                    )
+                    
+                    assistant_message = second_response["choices"][0]["message"]["content"]
+                    print(f"Response: {assistant_message}")
             else:
                 print("Function execution cancelled.")
 
