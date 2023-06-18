@@ -24,17 +24,23 @@ def play_yt_vid_from_search(fargs):
     search_term = fargs.get("search_term")
     rnd = fargs.get("random")
     s = Search(search_term)
-    if rnd == None:
-        vid = s.results[0]
-    else:
-        vid = s.results[random.randint(0, len(s.results)-1)]
+    try:
+        if rnd == None:
+            vid = s.results[0]
+        else:
+            vid = s.results[random.randint(0, len(s.results)-1)]
+    except:
+        print("err")
 
-    print(f"firefox https://youtube.com/watch?v={vid.video_id}")
-    webbrowser.open_new_tab(f"https://youtube.com/watch?v={vid.video_id}")
+    try:    
+        print(f"Opening new tab with URL: https://youtube.com/watch?v={vid.video_id}")
+        webbrowser.open_new_tab(f"https://youtube.com/watch?v={vid.video_id}")
+    except:
+        print("err")
 
 def google_search(fargs):
     """Opens a new tab with a Google search for the given term"""
-    search_term = fargs.get("search_term")
+    search_term = fargs.get("search_term").replace(" ", "+")
     url = f"https://www.google.com/search?q={search_term}"
     print(f"Opening new tab with URL: {url}")
     webbrowser.open_new_tab(url)
