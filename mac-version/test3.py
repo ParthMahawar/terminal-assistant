@@ -153,13 +153,15 @@ def run_conversation():
                         else:
                             print("Command output:", function_response_json['output'])
                             currpath = function_response_json["cwd"]
-                    messages.append(
-                        {
-                            "role": "function",
-                            "name": function_name,
-                            "content": function_response,
-                        }
-                    )
+                    
+                    if (len(function_response_json["output"] > 16000)):
+                        messages.append(
+                            {
+                                "role": "function",
+                                "name": function_name,
+                                "content": function_response,
+                            }
+                        )
                     
                 messages.append(response_message)  # extend conversation with assistant's reply
                 
