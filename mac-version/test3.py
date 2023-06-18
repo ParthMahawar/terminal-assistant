@@ -12,18 +12,26 @@ openai.api_key = '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'
 def terminal_command_executor(fargs):
     """Execute a terminal command and return the output"""
     command = fargs.get("command")
-    result = subprocess.run(command, capture_output=True, shell=True, text=True)
-    return json.dumps({"output": result.stdout, "error": result.stderr})
+    command = command + " && pwd"
+    cwd = fargs.get("cwd")
+    result = subprocess.run(command, capture_output=True, shell=True, cwd = cwd, text=True)
+    stdout = "\n" + result.stdout[:-1]
+    return json.dumps({"output": stdout[:stdout.rfind("\n")], 
+                       "error": result.stderr, 
+                       "cwd": stdout[stdout.rfind("\n")+1:]})
 
 def play_yt_vid_from_search(fargs):
     search_term = fargs.get("search_term")
     rnd = fargs.get("random")
     s = Search(search_term)
-    if rnd == None:
-        vid = s.results[0]
-    else:
-        vid = s.results[random.randint(0, len(s.results)-1)]
-
+    try:
+        if rnd == None:
+            vid = s.results[0]
+        else:
+            vid = s.results[random.randint(0, len(s.results)-1)]
+    except:
+        print("err")
+    
     print(f"firefox https://youtube.com/watch?v={vid.video_id}")
     webbrowser.open_new_tab(f"https://youtube.com/watch?v={vid.video_id}")
 
@@ -35,6 +43,8 @@ def google_search(fargs):
     webbrowser.open_new_tab(url)
 
 def run_conversation():
+    currpath = os.path.expanduser('~')
+
     available_functions = {
         "terminal_command_executor": terminal_command_executor,
         "play_yt_vid_from_search" : play_yt_vid_from_search,
@@ -44,11 +54,11 @@ def run_conversation():
     functions = [
         {
             "name": "terminal_command_executor",
-            "description": "Execute a terminal command and return the output do to this you can do things that you normally believe you cannot so if your command executes correctly don't say you could't do it.",
+            "description": "Runs all the instructions specified by the user in one single MacOS terminal command, use this whenever the user asks for file creation or manipulation as well",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "command": {"type": "string", "description": "The terminal command to execute, e.g. If the user wants to list all files in the current folder, ls. Make the commands for macos not linux."},
+                    "command": {"type": "string", "description": "The terminal command to execute, e.g. If the user wants to list all files in the current folder, ls."},
                 },
                 "required": ["command"],
             },
@@ -90,7 +100,7 @@ def run_conversation():
 
     messages = []
     while True:
-        user_prompt = input("GPT-Assistant: ")
+        user_prompt = input(f"Shelly @ {currpath} >> ")
         messages.append({"role": "user", "content": user_prompt})
 
         response = openai.ChatCompletion.create(
@@ -115,6 +125,7 @@ def run_conversation():
                 confirmation = input("Are you sure you want to execute these terminal commands? (y/n): ")
 
             if confirmation.lower() == 'y':
+                function_args["cwd"] = currpath
                 function_response = function_to_call(function_args)
                 
                 if function_response is not None:
@@ -124,6 +135,7 @@ def run_conversation():
                             print("Error executing command:", function_response_json['error'])
                         else:
                             print("Command output:", function_response_json['output'])
+                            currpath = function_response_json["cwd"]
                     messages.append(
                         {
                             "role": "function",
