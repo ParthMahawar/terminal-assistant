@@ -24,14 +24,11 @@ def play_yt_vid_from_search(fargs):
     search_term = fargs.get("search_term")
     rnd = fargs.get("random")
     s = Search(search_term)
-    try:
-        if rnd == None:
-            vid = s.results[0]
-        else:
-            vid = s.results[random.randint(0, len(s.results)-1)]
-    except:
-        print("err")
-    
+    if rnd == None:
+        vid = s.results[0]
+    else:
+        vid = s.results[random.randint(0, len(s.results)-1)]
+
     print(f"firefox https://youtube.com/watch?v={vid.video_id}")
     webbrowser.open_new_tab(f"https://youtube.com/watch?v={vid.video_id}")
 
@@ -41,6 +38,14 @@ def google_search(fargs):
     url = f"https://www.google.com/search?q={search_term}"
     print(f"Opening new tab with URL: {url}")
     webbrowser.open_new_tab(url)
+
+def get_command_explanation(command):
+    """Ask GPT-4 to provide an explanation of what the command does"""
+    response = openai.ChatCompletion.create(
+        model="gpt-4-0613",
+        messages=[{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": f"What does the terminal command '{command}' do?"}]
+    )
+    return response["choices"][0]["message"]["content"]
 
 def run_conversation():
     currpath = os.path.expanduser('~')
@@ -106,8 +111,8 @@ def run_conversation():
         response = openai.ChatCompletion.create(
             model="gpt-4-0613",
             messages=messages,
-            functions=functions,
             function_call="auto",
+            functions=functions
         )
 
         response_message = response["choices"][0]["message"]
@@ -121,8 +126,14 @@ def run_conversation():
             if function_name != "terminal_command_executor":
                 confirmation = "y"
             else:
-                print(function_args.get("command"))
-                confirmation = input("Are you sure you want to execute these terminal commands? (y/n): ")
+                command = function_args.get("command")
+                print(command)
+                while True:
+                    confirmation = input("Do you want to execute this terminal command? (y/n/h for help): ")
+                    if confirmation.lower() == 'h':
+                        print(get_command_explanation(command))
+                    else:
+                        break
 
             if confirmation.lower() == 'y':
                 function_args["cwd"] = currpath
