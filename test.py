@@ -22,7 +22,7 @@ def run_conversation():
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "command": {"type": "string", "description": "The terminal command to execute"},
+                    "command": {"type": "string", "description": "The terminal command to execute, that executes all instructions, e.g. If the user wants to list all files in the current folder, ls"},
                 },
                 "required": ["command"],
             },
@@ -49,9 +49,9 @@ def run_conversation():
             function_args = json.loads(response_message["function_call"]["arguments"])
             
             print(f"Command to execute: {function_args.get('command')}")
-            confirmation = input("Are you sure you want to execute this command? (yes/no): ")
+            confirmation = input("Are you sure you want to execute this command? (y/n): ")
 
-            if confirmation.lower() == 'yes':
+            if confirmation.lower() == 'y':
                 function_response = function_to_call(
                     command=function_args.get("command"),
                 )
@@ -70,7 +70,7 @@ def run_conversation():
                 )  # get a new response from GPT where it can see the function response
                 
                 assistant_message = second_response["choices"][0]["message"]["content"]
-                print(f"GPT-Assistant: {assistant_message}")
+                print(f"Assistant Response: {assistant_message}")
             else:
                 print("Command execution cancelled.")
 
