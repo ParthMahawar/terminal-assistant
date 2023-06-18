@@ -48,6 +48,14 @@ def google_search(fargs):
     print(f"Opening new tab with URL: {url}")
     webbrowser.open_new_tab(url)
 
+def get_command_explanation(command):
+    """Ask GPT-4 to provide an explanation of what the command does"""
+    response = openai.ChatCompletion.create(
+        model="gpt-4-0613",
+        messages=[{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": f"What does the terminal command '{command}' do?"}]
+    )
+    return response["choices"][0]["message"]["content"]
+
 def run_conversation():
     currpath = os.path.expanduser('~')
     recorder = PvRecorder(device_index=-1, frame_length=512)
@@ -107,6 +115,7 @@ def run_conversation():
 
     messages = []
     while True:
+        input("Press enter to start recording")
         print(f"Shelly @ {currpath} >> Voice input start, ctrl c to end")
 
         try:
@@ -120,12 +129,13 @@ def run_conversation():
                 f.setparams((1, 2, 16000, 512, "NONE", "NONE"))
                 f.writeframes(struct.pack("h" * len(audio), *audio))
         finally:
-            recorder.delete()
             audio = []
+            print("")
 
         audio_file= open("recording.wav", "rb")
-        transcript = openai.Audio.transcribe("whisper-1", audio_file)
+        transcript = openai.Audio.translate("whisper-1", audio_file)
         print(transcript.get("text"))
+        os.remove("recording.wav")
 
         messages.append({"role": "user", "content": transcript.get("text")})
 
@@ -147,8 +157,14 @@ def run_conversation():
             if function_name != "terminal_command_executor":
                 confirmation = "y"
             else:
-                print(function_args.get("command"))
-                confirmation = input("Are you sure you want to execute these terminal commands? (y/n): ")
+                command = function_args.get("command")
+                print(command)
+                while True:
+                    confirmation = input("Do you want to execute this terminal command? (y/n/h for help): ")
+                    if confirmation.lower() == 'h':
+                        print(get_command_explanation(command))
+                    else:
+                        break
 
             if confirmation.lower() == 'y':
                 function_args["cwd"] = currpath
