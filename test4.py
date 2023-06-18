@@ -109,6 +109,7 @@ def run_conversation():
                 f.writeframes(struct.pack("h" * len(audio), *audio))
         finally:
             recorder.delete()
+            audio = []
 
         audio_file= open("recording.wav", "rb")
         transcript = openai.Audio.transcribe("whisper-1", audio_file)
