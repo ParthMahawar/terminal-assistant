@@ -7,7 +7,7 @@ from pytube import Search
 import random
 
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 def run_terminal_command(fargs):
     command = fargs.get("command")
@@ -37,7 +37,7 @@ def google_search(fargs):
 functions = [
     {
         "name": "run_terminal_command",
-        "description": "Runs all the instructions specified by the user in one single terminal command",
+        "description": "Runs all the instructions specified by the user in one single terminal command, use this whenever the user asks for file creation or manipulation as well",
         "parameters":{
             "type": "object",
             "properties": {
@@ -69,7 +69,7 @@ functions = [
     },
     {
         "name": "google_search",
-        "description": "Opens a Google Search window, only use when user asks for info GPT does not have, like sports scores",
+        "description": "Opens a Google Search window, only use when user asks for real-time info like sports scores or election results",
         "parameters":{
             "type": "object",
             "properties": {
