@@ -7,7 +7,7 @@ from pytube import Search
 import random
 
 
-openai.api_key = ""
+openai.api_key = "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"
 
 def run_terminal_command(fargs):
     command = fargs.get("command")
@@ -27,6 +27,12 @@ def play_yt_vid_from_search(fargs):
     print(search_term)
     print(rnd)
     os.system(f"firefox https://youtube.com/watch?v={vid.video_id}")
+
+def google_search(fargs):
+    search_term = fargs.get("search_term")
+    search_term = search_term.replace(" ", "+")
+    print(search_term)
+    os.system(f"firefox https://www.google.com/search?q={search_term}")
 
 functions = [
     {
@@ -60,6 +66,20 @@ functions = [
             },
             "required": ["search_term"]
         }
+    },
+    {
+        "name": "google_search",
+        "description": "Opens a Google Search window, only use when user asks for info GPT does not have, like sports scores",
+        "parameters":{
+            "type": "object",
+            "properties": {
+                "search_term": {
+                    "type": "string",
+                    "description": "The best search term for the user's query",
+                },
+            },
+            "required": ["search_term"]
+        }
     }
 ]
 
@@ -80,7 +100,8 @@ response_message = response["choices"][0]["message"]
 if response_message.get("function_call"):
     available_functions = {
         "run_terminal_command":run_terminal_command,
-        "play_yt_vid_from_search":play_yt_vid_from_search
+        "play_yt_vid_from_search":play_yt_vid_from_search,
+        "google_search":google_search
     }
     function_name = response_message["function_call"]["name"]
     function_to_call = available_functions[function_name]
