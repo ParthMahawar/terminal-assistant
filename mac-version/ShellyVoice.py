@@ -10,7 +10,7 @@ import wave
 import struct
 
 # Replace with your OpenAI API Key
-openai.api_key = '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'
+openai.api_key = 'API_KEY'
 
 def terminal_command_executor(fargs):
     """Execute a terminal command and return the output"""
